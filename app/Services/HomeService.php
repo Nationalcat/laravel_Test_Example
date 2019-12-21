@@ -5,7 +5,8 @@ namespace App\Services;
 
 
 use App\User;
-use Illuminate\Database\Eloquent\Model;
+use GuzzleHttp\Client;
+
 
 class HomeService
 {
@@ -17,10 +18,14 @@ class HomeService
      * @var \Illuminate\Contracts\Foundation\Application
      */
     private $loggerService;
+    /**
+     * @var \Illuminate\Contracts\Foundation\Application
+     */
+    private $client;
 
     public function __construct(User $user)
     {
-        $this->user = $user;
+        $this->user          = $user;
         $this->loggerService = app(LoggerService::class);
     }
 
@@ -30,5 +35,15 @@ class HomeService
         $user = $this->user->find($userId);
 
         return $user->name ?? null;
+    }
+
+    public function getWeather()
+    {
+        $response = app(Client::class)
+            ->get('天氣預報 api')
+            ->getBody()
+            ->getContents();
+
+        return json_decode($response)->today;
     }
 }
