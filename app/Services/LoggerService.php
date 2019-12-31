@@ -6,7 +6,7 @@ namespace App\Services;
 
 class LoggerService
 {
-    public function save($userId) : void
+    public function save(int $userId, string $content = null) : void
     {
         var_dump('倒數五秒拉');
         sleep(1);

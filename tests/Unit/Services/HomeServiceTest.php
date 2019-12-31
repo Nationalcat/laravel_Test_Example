@@ -104,4 +104,43 @@ class HomeServiceTest extends TestCase
         // assert
         $this->assertEquals('今天真好', $act);
     }
+
+    /**
+     * mock 受測類別與檢測迴圈的傳入參數
+     * 一般來說，不推薦 mock 受測類別，這會導致測試會被切的很碎，但有時候還是需要 mock 它們
+     *
+     * 執行下列指令，可只測試相同群組的測試案例
+     * ./vendor/bin/phpunit --group=batchWritingLogs
+     *
+     * @test
+     * @group batchWritingLogs
+     *
+     * @throws \ReflectionException
+     */
+    public function batchWritingLogs_is_work()
+    {
+        // arrange
+        // 這邊要用 initPartialMockery 來 mock target，這樣就能同時 mock 與執行受測類別
+        $this->target = $this->initPartialMockery(HomeService::class);
+        /*
+         * 接著，這裡需要做 1 或 3，或著其他更好的方法
+         * 1. 不過 initPartialMockery 有個缺點是類別的屬性都會在 constructor 執行完後被清掉 (預設值不影響)，
+         *    這時你需要使用 setObjectAttribute 重新注入
+         * 2. phpunit 原生的 mock，對 mock 受測類別有更優雅的方式，但初期先學習 mockery 套件(因為這個很夯)
+         * 3. 或著改在受測方法上用 app() 輔助方法來做 DI;
+         */
+
+        // 該方法預設會跑兩次迴圈，getCountry 執行結果順序如下變數。這邊你還需要 mock $this->target->getCountry()
+        $countryByUserIdIsOne = '台灣';
+        $countryByUserIdIsTWO = '美國';
+        // 別忘了 $this->loggerService->save() 也需要 mock
+
+        // act
+        $events = [
+            ['userId' => 1, 'content' => '新年快樂'],
+            ['userId' => 2, 'content' => '早安'],
+        ];
+        $this->target->batchWritingLogs($events);
+        // assert (因為回傳提示是 void 所以不判斷該方法的回傳值)
+    }
 }

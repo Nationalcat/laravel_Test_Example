@@ -1,12 +1,9 @@
 <?php
 
-
 namespace App\Services;
-
 
 use App\User;
 use GuzzleHttp\Client;
-
 
 class HomeService
 {
@@ -15,13 +12,9 @@ class HomeService
      */
     private $user;
     /**
-     * @var \Illuminate\Contracts\Foundation\Application
+     * @var LoggerService|\Illuminate\Contracts\Foundation\Application
      */
-    private $loggerService;
-    /**
-     * @var \Illuminate\Contracts\Foundation\Application
-     */
-    private $client;
+    protected $loggerService;
 
     public function __construct(User $user)
     {
@@ -45,5 +38,24 @@ class HomeService
             ->getContents();
 
         return json_decode($response)->today;
+    }
+
+    public function batchWritingLogs(iterable $events) : void
+    {
+        foreach ($events as $event) {
+            $country = $this->getCountry();
+            $content ="{$event['content']}({$country})";
+            $this->loggerService->save($event['userId'], $content);
+        }
+    }
+
+    public function getCountry() : string
+    {
+        $response = app(Client::class)
+            ->get('拿 IP 換國名的 api')
+            ->getBody()
+            ->getContents();
+
+        return json_decode($response)->countryName;
     }
 }
